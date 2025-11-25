@@ -1,25 +1,37 @@
+enum UserType { client, business }
+
 class UserModel {
   final String uid;
-  final String email;
+  final String? email;
   final String? displayName;
   final String? photoURL;
-  final String role; // 'user' o 'business'
+  final UserType userType;
+  final String? businessId; // Solo para usuarios tipo 'business'
 
-  UserModel({
+  const UserModel({
     required this.uid,
-    required this.email,
+    this.email,
     this.displayName,
     this.photoURL,
-    this.role = 'user',
+    this.userType = UserType.client,
+    this.businessId,
   });
 
+  bool get isBusinessOwner => userType == UserType.business;
+
   // Factory constructor para crear desde Firebase User
-  factory UserModel.fromFirebaseUser(dynamic firebaseUser) {
+  factory UserModel.fromFirebaseUser(
+    dynamic firebaseUser, {
+    UserType userType = UserType.client,
+    String? businessId,
+  }) {
     return UserModel(
       uid: firebaseUser.uid,
-      email: firebaseUser.email ?? '',
+      email: firebaseUser.email,
       displayName: firebaseUser.displayName,
       photoURL: firebaseUser.photoURL,
+      userType: userType,
+      businessId: businessId,
     );
   }
 
@@ -30,7 +42,8 @@ class UserModel {
       'email': email,
       'displayName': displayName,
       'photoURL': photoURL,
-      'role': role,
+      'userType': userType.name,
+      'businessId': businessId,
     };
   }
 
@@ -41,7 +54,10 @@ class UserModel {
       email: json['email'],
       displayName: json['displayName'],
       photoURL: json['photoURL'],
-      role: json['role'] ?? 'user',
+      userType: json['userType'] == 'business'
+          ? UserType.business
+          : UserType.client,
+      businessId: json['businessId'],
     );
   }
 }

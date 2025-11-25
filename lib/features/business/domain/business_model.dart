@@ -11,6 +11,9 @@ class BusinessModel {
   final double distance; // Distancia simulada en km
   final List<MenuItem> menu;
   final List<Review> reviews;
+  final bool isPublished; // Si el negocio está completo y visible en el feed
+  final String? phoneNumber;
+  final String? schedule; // Horarios como String (ej: "Lun-Dom 8:00-22:00")
 
   const BusinessModel({
     required this.id,
@@ -25,7 +28,31 @@ class BusinessModel {
     required this.distance,
     this.menu = const [],
     this.reviews = const [],
+    this.isPublished = false,
+    this.phoneNumber,
+    this.schedule,
   });
+
+  // Valida si el perfil está completo para ser publicado
+  bool isProfileComplete() {
+    return name.isNotEmpty &&
+        address.isNotEmpty &&
+        imageUrl.isNotEmpty &&
+        (schedule != null && schedule!.isNotEmpty);
+  }
+
+  // Calcula el porcentaje de completitud del perfil
+  int get profileCompleteness {
+    int completed = 0;
+    const int totalFields = 4;
+
+    if (name.isNotEmpty) completed++;
+    if (address.isNotEmpty) completed++;
+    if (imageUrl.isNotEmpty) completed++;
+    if (schedule != null && schedule!.isNotEmpty) completed++;
+
+    return ((completed / totalFields) * 100).round();
+  }
 }
 
 class MenuItem {
