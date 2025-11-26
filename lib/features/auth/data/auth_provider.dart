@@ -27,4 +27,11 @@ class AuthProvider with ChangeNotifier {
   Future<void> signOut() async {
     await _authService.signOut();
   }
+
+  Future<void> refreshUser() async {
+    final user = await _authService.currentUser;
+    _user = user;
+    _isLoading = false;
+    notifyListeners();
+  }
 }

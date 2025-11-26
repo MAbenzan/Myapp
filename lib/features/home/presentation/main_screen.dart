@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../business/presentation/feed_screen.dart';
 import '../../search/presentation/search_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../profile/presentation/business_owner_profile_screen.dart';
 import '../../auth/data/auth_service.dart';
 import '../../auth/domain/user_model.dart';
+import '../../auth/data/auth_provider.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int initialIndex;
+  const MainScreen({super.key, this.initialIndex = 0});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -22,16 +25,32 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _loadUser();
   }
 
   Future<void> _loadUser() async {
-    final user = await _authService.currentUser;
-    if (mounted) {
-      setState(() {
-        _currentUser = user;
-        _isLoading = false;
-      });
+    try {
+      final providerUser = Provider.of<AuthProvider>(context, listen: false).user;
+      if (mounted) {
+        setState(() {
+          _currentUser = providerUser;
+          _isLoading = false;
+        });
+      }
+
+      final user = await _authService.currentUser;
+      if (mounted && user != null) {
+        setState(() {
+          _currentUser = user;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

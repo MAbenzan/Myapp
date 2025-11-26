@@ -7,6 +7,8 @@ class UserModel {
   final String? photoURL;
   final UserType userType;
   final String? businessId; // Solo para usuarios tipo 'business'
+  final List<String> favorites; // IDs de negocios favoritos
+  final String? description; // Descripción del usuario
 
   const UserModel({
     required this.uid,
@@ -15,6 +17,8 @@ class UserModel {
     this.photoURL,
     this.userType = UserType.client,
     this.businessId,
+    this.favorites = const [],
+    this.description,
   });
 
   bool get isBusinessOwner => userType == UserType.business;
@@ -24,6 +28,8 @@ class UserModel {
     dynamic firebaseUser, {
     UserType userType = UserType.client,
     String? businessId,
+    List<String> favorites = const [],
+    String? description,
   }) {
     return UserModel(
       uid: firebaseUser.uid,
@@ -32,6 +38,8 @@ class UserModel {
       photoURL: firebaseUser.photoURL,
       userType: userType,
       businessId: businessId,
+      favorites: favorites,
+      description: description,
     );
   }
 
@@ -44,6 +52,8 @@ class UserModel {
       'photoURL': photoURL,
       'userType': userType.name,
       'businessId': businessId,
+      'favorites': favorites,
+      'description': description,
     };
   }
 
@@ -58,6 +68,12 @@ class UserModel {
           ? UserType.business
           : UserType.client,
       businessId: json['businessId'],
+      favorites:
+          (json['favorites'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      description: json['description'],
     );
   }
 }

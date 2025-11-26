@@ -4,6 +4,10 @@ import 'tabs/menu_tab.dart';
 import 'tabs/reviews_tab.dart';
 import 'tabs/info_tab.dart';
 
+import 'package:provider/provider.dart';
+import '../../auth/data/auth_provider.dart';
+import '../../favorites/data/favorites_service.dart';
+
 class BusinessDetailScreen extends StatelessWidget {
   final BusinessModel business;
 
@@ -12,6 +16,9 @@ class BusinessDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.user?.uid;
+    final favoritesService = FavoritesService();
 
     return Scaffold(
       body: DefaultTabController(
@@ -35,18 +42,40 @@ class BusinessDetailScreen extends StatelessWidget {
                   ),
                 ),
                 actions: [
-                  Container(
-                    margin: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface.withValues(alpha: 0.8),
-                      shape: BoxShape.circle,
+                  if (userId != null)
+                    StreamBuilder<List<String>>(
+                      stream: favoritesService.getUserFavoritesStream(userId),
+                      builder: (context, snapshot) {
+                        final favorites = snapshot.data ?? [];
+                        final isFavorite = favorites.contains(business.id);
+
+                        return Container(
+                          margin: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface.withValues(
+                              alpha: 0.8,
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite
+                                  ? Colors.red
+                                  : theme.colorScheme.onSurface,
+                            ),
+                            onPressed: () {
+                              favoritesService.toggleFavorite(
+                                userId,
+                                business.id,
+                              );
+                            },
+                          ),
+                        );
+                      },
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.favorite_border),
-                      onPressed: () {},
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(

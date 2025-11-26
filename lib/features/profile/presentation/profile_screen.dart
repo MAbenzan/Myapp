@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../auth/data/auth_provider.dart';
 import '../../../core/theme_provider.dart';
+import '../../favorites/data/favorites_service.dart';
+import '../../favorites/presentation/favorites_screen.dart';
+import 'edit_client_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -12,6 +15,7 @@ class ProfileScreen extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final user = authProvider.user;
     final theme = Theme.of(context);
+    final favoritesService = FavoritesService();
 
     // Helpers para datos seguros
     final userEmail = user?.email ?? '';
@@ -19,6 +23,8 @@ class ProfileScreen extends StatelessWidget {
         ? userEmail.substring(0, 1).toUpperCase()
         : 'U';
     final userName = user?.displayName ?? 'Usuario';
+    final userId = user?.uid ?? '';
+    final userDescription = user?.description ?? '';
 
     return Scaffold(
       body: CustomScrollView(
@@ -26,6 +32,23 @@ class ProfileScreen extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 200.0,
             pinned: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                tooltip: 'Editar Perfil',
+                onPressed: () {
+                  if (user != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditClientProfileScreen(user: user),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
@@ -61,6 +84,23 @@ class ProfileScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (userDescription.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          userDescription,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withValues(alpha: 0.8),
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     Text(
                       userEmail,
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -80,13 +120,38 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   // Estadísticas
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatItem(context, '0', 'Reseñas'),
-                      _buildStatItem(context, '0', 'Fotos'),
-                      _buildStatItem(context, '0', 'Favoritos'),
-                    ],
+                  StreamBuilder<List<String>>(
+                    stream: favoritesService.getUserFavoritesStream(userId),
+                    builder: (context, snapshot) {
+                      final favoritesCount = snapshot.data?.length ?? 0;
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildStatItem(
+                            context,
+                            '0',
+                            'Reseñas',
+                          ), // Implement reviews count
+                          _buildStatItem(context, '0', 'Fotos'),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      FavoritesScreen(userId: userId),
+                                ),
+                              );
+                            },
+                            child: _buildStatItem(
+                              context,
+                              '$favoritesCount',
+                              'Favoritos',
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
 
@@ -94,13 +159,14 @@ class ProfileScreen extends StatelessWidget {
                   _buildSectionTitle(context, 'Cuenta'),
                   _buildListTile(
                     context,
-                    icon: Icons.store_mall_directory_outlined,
-                    title: 'Mi Negocio',
-                    subtitle: 'Gestiona tu perfil de negocio',
+                    icon: Icons.favorite_border,
+                    title: 'Mis Favoritos',
+                    subtitle: 'Ver tus lugares guardados',
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Próximamente: Gestión de Negocio'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FavoritesScreen(userId: userId),
                         ),
                       );
                     },

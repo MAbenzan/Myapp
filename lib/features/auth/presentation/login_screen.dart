@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import '../data/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../../home/presentation/main_screen.dart';
+import '../data/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,14 +32,44 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              Text('Iniciando sesión...'),
+            ],
+          ),
+        ),
+      ),
+    );
 
     try {
-      await _authService.signInWithEmail(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-      // Navegación manejada por AuthWrapper
+      await _authService
+          .signInAndInitialize(
+            _emailController.text.trim(),
+            _passwordController.text,
+          )
+          .timeout(const Duration(seconds: 12));
       if (mounted) {
+        setState(() => _isLoading = false);
+        Navigator.of(context, rootNavigator: true).pop();
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.refreshUser();
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainScreen(initialIndex: 0)),
+          (route) => false,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(
@@ -54,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -75,11 +108,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              Text('Iniciando sesión...'),
+            ],
+          ),
+        ),
+      ),
+    );
 
     try {
-      await _authService.signInWithGoogle();
-      // Navegación manejada por AuthWrapper
+      await _authService.signInWithGoogleAndInitialize().timeout(
+        const Duration(seconds: 12),
+      );
       if (mounted) {
+        setState(() => _isLoading = false);
+        Navigator.of(context, rootNavigator: true).pop();
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.refreshUser();
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainScreen(initialIndex: 0)),
+          (route) => false,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(
@@ -96,6 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -270,7 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _isLoading ? null : _signInWithGoogle,
                     icon: Image.network(
-                      'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/588px-Google_%22G%22_Logo.svg.png',
                       height: 24,
                     ),
                     label: const Text('Continuar con Google'),

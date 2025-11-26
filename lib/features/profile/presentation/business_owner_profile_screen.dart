@@ -7,6 +7,7 @@ import 'tabs/menu_manager_tab.dart';
 import 'tabs/services_manager_tab.dart';
 import 'tabs/gallery_manager_tab.dart';
 import 'tabs/reviews_manager_tab.dart';
+import 'edit_business_profile_screen.dart';
 
 class BusinessOwnerProfileScreen extends StatefulWidget {
   final String businessId;
@@ -50,6 +51,19 @@ class _BusinessOwnerProfileScreenState
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.edit),
+                tooltip: 'Editar Perfil',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EditBusinessProfileScreen(business: business),
+                    ),
+                  );
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.logout),
                 onPressed: () {
                   AuthService().signOut();
@@ -63,10 +77,11 @@ class _BusinessOwnerProfileScreenState
                 ProfileCompletionBanner(
                   completionPercentage: completeness,
                   onCompleteProfile: () {
-                    // Navigate to edit profile form
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Próximamente: Editar Perfil'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditBusinessProfileScreen(business: business),
                       ),
                     );
                   },

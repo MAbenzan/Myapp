@@ -43,6 +43,33 @@ class FeedScreen extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
+                        Icons.verified_user,
+                        size: 14,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Sesión activa',
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.titleLarge?.color,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        user?.email ?? '',
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.titleLarge?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
                         Icons.location_on,
                         size: 14,
                         color: Theme.of(context).colorScheme.primary,

@@ -16,6 +16,22 @@ class BusinessService {
     });
   }
 
+  Stream<List<BusinessModel>> getFavoriteBusinesses(List<String> businessIds) {
+    if (businessIds.isEmpty) return Stream.value([]);
+
+    // Firestore 'whereIn' limit is 10. For MVP taking first 10.
+    // Ideally we should chunk requests.
+    return _firestore
+        .collection('businesses')
+        .where(FieldPath.documentId, whereIn: businessIds.take(10).toList())
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => BusinessModel.fromJson(doc.data()))
+              .toList(),
+        );
+  }
+
   // --- Menu Management ---
 
   // Add Menu Item
