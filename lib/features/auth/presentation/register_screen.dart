@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../data/auth_service.dart';
+import '../domain/user_model.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,17 +15,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _businessNameController = TextEditingController();
   final _authService = AuthService();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  UserType _selectedUserType = UserType.client;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _businessNameController.dispose();
     super.dispose();
   }
 
@@ -37,17 +41,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await _authService.signUpWithEmail(
         _emailController.text.trim(),
         _passwordController.text,
+        userType: _selectedUserType,
+        businessName: _selectedUserType == UserType.business
+            ? _businessNameController.text.trim()
+            : null,
       );
-      // Navegación manejada por AuthWrapper
+
+      // Mostrar mensaje de éxito
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _selectedUserType == UserType.business
+                        ? '¡Negocio creado con éxito! Bienvenido'
+                        : '¡Cuenta creada con éxito! Bienvenido',
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        // El AuthWrapper detectará el cambio de estado y navegará automáticamente
+        // No hacemos Navigator.pop para evitar volver al login
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(child: Text(e.toString())),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
         );
+        setState(() => _isLoading = false);
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
+    // No ponemos finally para que _isLoading permanezca true hasta que AuthWrapper redirija
   }
 
   @override
@@ -82,13 +125,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     context,
                   ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
+
+                // Selector de Tipo de Usuario
+                SegmentedButton<UserType>(
+                  segments: const [
+                    ButtonSegment<UserType>(
+                      value: UserType.client,
+                      label: Text('Cliente'),
+                      icon: Icon(Icons.person_outline),
+                    ),
+                    ButtonSegment<UserType>(
+                      value: UserType.business,
+                      label: Text('Negocio'),
+                      icon: Icon(Icons.store_outlined),
+                    ),
+                  ],
+                  selected: {_selectedUserType},
+                  onSelectionChanged: (Set<UserType> newSelection) {
+                    setState(() {
+                      _selectedUserType = newSelection.first;
+                    });
+                  },
+                ),
+                const SizedBox(height: 24),
 
                 // Formulario
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
+                      // Nombre del Negocio (Solo si es Negocio)
+                      if (_selectedUserType == UserType.business) ...[
+                        TextFormField(
+                          controller: _businessNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Nombre del Negocio',
+                            prefixIcon: Icon(Icons.store),
+                          ),
+                          validator: (value) {
+                            if (_selectedUserType == UserType.business &&
+                                (value == null || value.isEmpty)) {
+                              return 'Ingresa el nombre de tu negocio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
                       // Email
                       TextFormField(
                         controller: _emailController,
@@ -178,10 +263,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _register,
                           child: _isLoading
-                              ? const CircularProgressIndicator()
-                              : const Text(
-                                  'Crear Cuenta',
-                                  style: TextStyle(fontSize: 16),
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    const Text('Creando cuenta...'),
+                                  ],
+                                )
+                              : Text(
+                                  _selectedUserType == UserType.business
+                                      ? 'Crear Negocio'
+                                      : 'Crear Cuenta',
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                         ),
                       ),

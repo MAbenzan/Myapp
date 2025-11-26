@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'features/auth/data/auth_provider.dart';
 import 'features/auth/presentation/auth_wrapper.dart';
+import 'features/auth/presentation/register_screen.dart';
 import 'core/app_theme.dart';
 import 'core/theme_provider.dart';
 
@@ -31,9 +32,7 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
             home: const AuthWrapper(),
-            routes: {
-              // '/register': (context) => const RegisterScreen(), // Ya no es necesario si usamos AuthWrapper
-            },
+            routes: {'/register': (context) => const RegisterScreen()},
             debugShowCheckedModeBanner: false,
           );
         },
