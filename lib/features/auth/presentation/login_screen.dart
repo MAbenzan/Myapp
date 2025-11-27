@@ -66,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context, rootNavigator: true).pop();
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         await authProvider.refreshUser();
+        if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const MainScreen(initialIndex: 0)),
           (route) => false,
@@ -139,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context, rootNavigator: true).pop();
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         await authProvider.refreshUser();
+        if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const MainScreen(initialIndex: 0)),
           (route) => false,

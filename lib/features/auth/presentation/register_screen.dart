@@ -69,8 +69,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         );
 
-        // El AuthWrapper detectará el cambio de estado y navegará automáticamente
-        // No hacemos Navigator.pop para evitar volver al login
+        // Volver al login para que el usuario inicie sesión
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -87,10 +90,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             duration: const Duration(seconds: 4),
           ),
         );
+      }
+    } finally {
+      if (mounted) {
         setState(() => _isLoading = false);
       }
     }
-    // No ponemos finally para que _isLoading permanezca true hasta que AuthWrapper redirija
   }
 
   @override

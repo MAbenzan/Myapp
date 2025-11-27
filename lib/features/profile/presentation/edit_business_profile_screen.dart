@@ -147,7 +147,7 @@ class _EditBusinessProfileScreenState extends State<EditBusinessProfileScreen> {
                               ? DecorationImage(
                                   image: NetworkImage(_imageUrlController.text),
                                   fit: BoxFit.cover,
-                                  onError: (_, __) {},
+                                  onError: (exception, stackTrace) {},
                                 )
                               : null,
                         ),
@@ -195,7 +195,7 @@ class _EditBusinessProfileScreenState extends State<EditBusinessProfileScreen> {
                     const SizedBox(height: 16),
 
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      initialValue: _selectedCategory,
                       decoration: const InputDecoration(
                         labelText: 'Categoría',
                         prefixIcon: Icon(Icons.category),

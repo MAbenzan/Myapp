@@ -19,7 +19,6 @@ class _EditClientProfileScreenState extends State<EditClientProfileScreen> {
   late TextEditingController _descriptionController;
 
   bool _isLoading = false;
-  final UserService _userService = UserService();
 
   @override
   void initState() {
@@ -51,7 +50,7 @@ class _EditClientProfileScreenState extends State<EditClientProfileScreen> {
       };
 
       // Update Firestore
-      await _userService.updateUserProfile(widget.user.uid, updates);
+      await UserService.updateUserProfile(widget.user.uid, updates);
 
       // Update Firebase Auth displayName
       final firebaseUser = FirebaseAuth.instance.currentUser;

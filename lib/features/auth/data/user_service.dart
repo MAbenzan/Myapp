@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../domain/user_model.dart';
 import '../../business/domain/business_model.dart';
+import 'package:myapp/utils/logger.dart';
 
 class UserService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,7 +17,7 @@ class UserService {
           .timeout(const Duration(seconds: 10));
       return true;
     } catch (e) {
-      print('Error saving user: $e');
+      logger.e('Error saving user: $e');
       return false;
     }
   }
@@ -48,7 +49,7 @@ class UserService {
           .timeout(const Duration(seconds: 10));
       return true;
     } catch (e) {
-      print('Error saving business: $e');
+      logger.e('Error saving business: $e');
       return false;
     }
   }
@@ -70,8 +71,25 @@ class UserService {
       }
       return null;
     } catch (e) {
-      print('Error getting current user: $e');
+      logger.e('Error getting current user: $e');
       return null;
+    }
+  }
+
+  // Actualizar perfil de usuario
+  static Future<void> updateUserProfile(
+    String userId,
+    Map<String, dynamic> updates,
+  ) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .update(updates)
+          .timeout(const Duration(seconds: 10));
+    } catch (e) {
+      logger.e('Error updating user profile: $e');
+      throw 'Error al actualizar perfil: $e';
     }
   }
 }
